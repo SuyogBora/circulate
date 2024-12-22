@@ -10,11 +10,6 @@ export const {
     signIn,
     signOut,
 } = NextAuth({
-    session: {
-        strategy: 'jwt',
-    },
-    adapter: PrismaAdapter(prisma),
-    secret: process.env.NEXT_AUTH_SECRETE,
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -39,4 +34,13 @@ export const {
             },
         }),
     ],
+    adapter: PrismaAdapter(prisma),
+    secret: process.env.NEXT_AUTH_SECRETE,
+    session: {
+       strategy:"jwt",
+       maxAge: 60 * 60 * 24 * 7,
+    },
+    jwt: {
+        maxAge: 60 * 60 * 24 * 7,
+    },
 });

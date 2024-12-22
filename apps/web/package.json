@@ -13,6 +13,7 @@
     "@circulate/providers": "workspace:*",
     "@circulate/ui": "workspace:*",
     "@circulate/utils": "workspace:*",
+    "@hookform/resolvers": "^3.9.1",
     "@next-auth/prisma-adapter": "^1.0.7",
     "lucide-react": "^0.469.0",
     "next": "15.1.2",
@@ -20,7 +21,10 @@
     "next-themes": "^0.4.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-dropzone": "^14.3.5"
+    "react-dropzone": "^14.3.5",
+    "react-hook-form": "^7.54.2",
+    "react-lottie-player": "^2.1.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@circulate/eslint-config": "workspace:*",
