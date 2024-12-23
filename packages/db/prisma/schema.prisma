@@ -37,11 +37,36 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid()) @map("_id")
+  id            String     @id @default(cuid()) @map("_id")
   name          String?
-  email         String?   @unique
+  email         String?    @unique
   emailVerified DateTime?
   image         String?
   Account       Account[]
   Session       Session[]
+  Transfer      Transfer[]
+}
+
+enum TransferMode {
+  MANUAL_SEND @map("manual_send")
+  EMAIL_SEND  @map("email_send")
+}
+
+model Transfer {
+  id                    String       @id @default(cuid()) @map("_id")
+  transferKey           String       @unique
+  transferName          String
+  transferMessage       String?
+  transferMode          TransferMode @default(MANUAL_SEND)
+  fileSize              Int
+  fileType              String
+  fileIsPasswordEnabled Boolean      @default(false)
+  filePassword          String?
+  recipientEmail        String?
+  user                  User?        @relation(fields: [userId], references: [id])
+  userId                String?
+  maxDownloads          Int?
+  expirationDate        DateTime?
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
 }

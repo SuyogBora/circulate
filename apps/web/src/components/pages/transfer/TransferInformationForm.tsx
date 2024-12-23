@@ -1,8 +1,8 @@
 "use client";
 
-import { TransferInfoFormSchema } from "@/lib/validation/transfer";
+import { TransferCreateSchema } from "@/lib/validation/transfer";
 import { TransferMode } from "@/types/enums";
-import { TransferData } from "@/types/state";
+import { TransferCreateDataType } from "@/types/state";
 import {
     Button,
     DialogFooter,
@@ -27,15 +27,15 @@ import { z } from "zod";
 interface TransferInformationFormProps {
     files: File[] | []
     transferMode: TransferMode,
-    handleSubmit: (data: z.infer<typeof TransferInfoFormSchema>) => void,
+    handleSubmit: (data: z.infer<typeof TransferCreateSchema>) => void,
     handleClose: () => void,
     isActiveStep:boolean,
-    initailsTransferData:TransferData,
+    initailsTransferData:TransferCreateDataType,
 }
 
 const TransferInformationForm: FC<TransferInformationFormProps> = ({ files, transferMode, handleSubmit,isActiveStep,initailsTransferData,handleClose }) => {
-    const form = useForm<z.infer<typeof TransferInfoFormSchema>>({
-        resolver: zodResolver(TransferInfoFormSchema),
+    const form = useForm<z.infer<typeof TransferCreateSchema>>({
+        resolver: zodResolver(TransferCreateSchema),
         values: {
             ...initailsTransferData,
             transferName:files[0]?.name ?? "",
@@ -43,7 +43,7 @@ const TransferInformationForm: FC<TransferInformationFormProps> = ({ files, tran
         }
     });
     const watchTransferMode = form.watch("transferMode");
-    const watchPasswordEnabled = form.watch("isPasswordEnabled");
+    const watchPasswordEnabled = form.watch("fileIsPasswordEnabled");
     return (
         <div className={cn("",{
              "hidden":!isActiveStep
@@ -82,7 +82,7 @@ const TransferInformationForm: FC<TransferInformationFormProps> = ({ files, tran
                     />
                     <FormField
                         control={form.control}
-                        name="isPasswordEnabled"
+                        name="fileIsPasswordEnabled"
                         render={({ field }) => (
                             <FormItem>
                                 <div className="flex items-center justify-between">
@@ -95,7 +95,7 @@ const TransferInformationForm: FC<TransferInformationFormProps> = ({ files, tran
                     {watchPasswordEnabled && (
                         <FormField
                             control={form.control}
-                            name="password"
+                            name="filePassword"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormControl>

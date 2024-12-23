@@ -3,15 +3,15 @@ import { cn } from '@circulate/utils';
 import { CircleCheckBig } from 'lucide-react';
 import { FC } from 'react';
 import Lottie from 'react-lottie-player';
-import LoadingJson from "../../../../public/asssets/lotties/loading.json";
+import CompleteJson from "../../../../public/asssets/lotties/complete.json";
 
-interface TransferInitializingUIProps {
+interface TransferCompleteUIProps {
   className?: string;
   isActiveStep: boolean;
   handleClose: () => void,
 }
 
-const TransferInitializingUI: FC<TransferInitializingUIProps> = ({ isActiveStep, className,handleClose }) => {
+const TransferCompleteUI: FC<TransferCompleteUIProps> = ({ isActiveStep, className,handleClose }) => {
   return (
     <div
       className={cn(
@@ -26,7 +26,7 @@ const TransferInitializingUI: FC<TransferInitializingUIProps> = ({ isActiveStep,
         <div className="lottie_wrapper -mt-8">
           <Lottie
             loop
-            animationData={LoadingJson}
+            animationData={CompleteJson}
             play
             className='mx-auto'
             style={{ width: 200, height: 200 }}
@@ -50,4 +50,4 @@ const TransferInitializingUI: FC<TransferInitializingUIProps> = ({ isActiveStep,
   );
 };
 
-export default TransferInitializingUI;
+export default TransferCompleteUI;

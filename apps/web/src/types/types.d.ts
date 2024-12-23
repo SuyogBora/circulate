@@ -9,6 +9,7 @@ declare module "next/server" {
 declare module "next-auth" {
     interface Session {
         user: {
+            
         } & DefaultSession["user"]
     }
 }

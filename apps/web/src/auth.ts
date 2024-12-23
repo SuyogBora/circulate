@@ -37,10 +37,20 @@ export const {
     adapter: PrismaAdapter(prisma),
     secret: process.env.NEXT_AUTH_SECRETE,
     session: {
-       strategy:"jwt",
-       maxAge: 60 * 60 * 24 * 7,
+        strategy: "jwt",
+        maxAge: 60 * 60 * 24 * 7,
     },
     jwt: {
         maxAge: 60 * 60 * 24 * 7,
+    },
+    callbacks: {
+        async jwt({ token, user ,session}) {
+            console.log("tokentokentokentokentokentokentoken",token,user)
+            return null
+        },
+        async session({ token, user ,session }) {
+            console.log("sessionsessionsessionsessionsessionsessionsessionsessionsessionsession",session)
+            return session
+        }
     },
 });

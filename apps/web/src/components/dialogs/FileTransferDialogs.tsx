@@ -1,7 +1,7 @@
 "use client";
 
 import { useFileTransferContext } from "@/lib/context/FileTransferContext";
-import { TransferInfoFormSchema } from "@/lib/validation/transfer";
+import { TransferCreateSchema } from "@/lib/validation/transfer";
 import { TransferMode, TransferStatus } from "@/types/enums";
 import {
   Dialog,
@@ -14,6 +14,8 @@ import { FC } from "react";
 import { z } from "zod";
 import TransferInformationForm from "../pages/transfer/TransferInformationForm";
 import TransferInitializingUI from "../pages/transfer/TransferInitializingUI";
+import TransferInProgressUI from "../pages/transfer/TransferInProgressUI";
+import TransferCompleteUI from "../pages/transfer/TransferCompleteUI";
 
 interface FileTransferDialogsProps {
   open: boolean;
@@ -23,12 +25,12 @@ interface FileTransferDialogsProps {
 
 const FileTransferDialogs: FC<FileTransferDialogsProps> = ({ open, close, transferMode }) => {
   const {
-    state: { files, transfer_status, transfer_data },
-    mutationFuncs: { handleInitilizeTransfer, handleTransferStatusChange }
+    state: { files, transfer_status, transfer_data, transfered_data_percentage },
+    mutationFuncs: { handleInitializeTransfer, handleTransferStatusChange }
   } = useFileTransferContext();
 
-  const handleSubmit = (data: z.infer<typeof TransferInfoFormSchema>) => {
-    handleInitilizeTransfer(data);
+  const handleSubmit = (data: z.infer<typeof TransferCreateSchema>) => {
+    handleInitializeTransfer(data);
   };
 
   const handleClose = () => {
@@ -71,7 +73,7 @@ const FileTransferDialogs: FC<FileTransferDialogsProps> = ({ open, close, transf
   const { title, description } = getDialogContent();
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={() => null}>
       <DialogContent hasCloseOption={false} className="sm:max-w-[425px] border-border">
         <DialogHeader>
           <DialogTitle className="mb-0.5">{title}</DialogTitle>
@@ -88,7 +90,9 @@ const FileTransferDialogs: FC<FileTransferDialogsProps> = ({ open, close, transf
             handleSubmit={handleSubmit}
             transferMode={transferMode}
           />
-          <TransferInitializingUI isActiveStep={transfer_status === TransferStatus.INITIALIZING} />
+          <TransferInitializingUI handleClose={handleClose} isActiveStep={transfer_status === TransferStatus.INITIALIZING} />
+          <TransferInProgressUI handleClose={handleClose} isActiveStep={transfer_status === TransferStatus.PROGRESS} transfered_data_percentage={transfered_data_percentage} />
+          <TransferCompleteUI handleClose={handleClose} isActiveStep={transfer_status === TransferStatus.COMPLETE} />
         </div>
       </DialogContent>
     </Dialog>

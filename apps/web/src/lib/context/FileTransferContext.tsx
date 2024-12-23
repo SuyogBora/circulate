@@ -1,44 +1,40 @@
 "use client";
 
 import { TransferMode, TransferStatus } from "@/types/enums";
-import { FileTransferAction, FileTransferContextValue, FileTransferState, TransferData } from "@/types/state";
+import { FileTransferContextValue, FileTransferState, TransferBaseDataType, TransferCreateDataType } from "@/types/state";
+import { inZip, isFileSizeExceeded } from "@circulate/utils";
+import axios from "axios";
 import { createContext, FC, PropsWithChildren, useCallback, useContext, useReducer } from "react";
+import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
+import { getUploadSignedURL } from "../actions/transfer";
+import { fileTransferReducer } from "../reducers/file-transfer-reducers";
+import { useSession } from "next-auth/react";
 
 const initialState: FileTransferState = {
     files: [],
     error: null,
     transfer_status: TransferStatus.INITIAL,
     transfer_data: {
+        transferKey: "",
         transferName: "",
         transferMessage: "",
-        password: "",
         transferMode: TransferMode.MANUAL_SEND,
+        fileSize: 0,
+        fileType: "",
+        fileIsPasswordEnabled: false,
+        filePassword: "",
         recipientEmail: "",
-        isPasswordEnabled: false,
+        userId: "",
     },
+    transfered_data_percentage: 0
 };
 
-const fileTransferReducer = (state: FileTransferState, action: FileTransferAction): FileTransferState => {
-    switch (action.type) {
-        case "ADD_FILE":
-            const newFiles = action.payload.filter(
-                (newFile) => !state.files.some((existingFile) => existingFile.name === newFile.name)
-            );
-            return { ...state, files: [...state.files, ...newFiles] };
-        case "REMOVE_FILE":
-            const filteredFiles = state.files.filter((existingFile) => existingFile.name !== action.payload.name)
-            return { ...state, files: filteredFiles }
-        case "CHANGE_TRANSFER_STATUS":
-            return { ...state,transfer_status:action.payload}
-        default:
-            return state;
-    }
-};
 
 const FileTransferContext = createContext<FileTransferContextValue | undefined>(undefined);
 const FileTransferContextProvider: FC<PropsWithChildren> = ({ children }) => {
+    const { data: session, status } = useSession()
     const [state, dispatch] = useReducer(fileTransferReducer, initialState);
-
     const handleAddFiles = useCallback((files: File[]) => {
         dispatch({ type: "ADD_FILE", payload: files });
     }, []);
@@ -47,8 +43,16 @@ const FileTransferContextProvider: FC<PropsWithChildren> = ({ children }) => {
         dispatch({ type: "REMOVE_FILE", payload: file });
     }, []);
 
-    const handleTransferStatusChange = useCallback((status:TransferStatus) => {
-        dispatch({ type: "CHANGE_TRANSFER_STATUS", payload:status});
+    const handleTransferStatusChange = useCallback((status: TransferStatus) => {
+        dispatch({ type: "CHANGE_TRANSFER_STATUS", payload: status });
+    }, []);
+
+    const handleTransferedDataPercentageChanges = useCallback((percenatage: number) => {
+        dispatch({ type: "CHANGE_TRANSFERED_DATA_PERCENATEGE", payload: percenatage });
+    }, []);
+
+    const handleApendTransferData = useCallback((transferData: TransferBaseDataType) => {
+        dispatch({ type: "APEND_TRANSFER_DATA", payload: transferData });
     }, []);
 
     const handleOnDrop = useCallback(
@@ -58,8 +62,76 @@ const FileTransferContextProvider: FC<PropsWithChildren> = ({ children }) => {
         [handleAddFiles]
     );
 
-    const handleInitilizeTransfer = (transferData:TransferData)=>{
-         handleTransferStatusChange(TransferStatus.INITIALIZING)
+    const MAX_FILE_SIZE_MB = 200;
+
+    const handleInitializeTransfer = async (transferData: TransferCreateDataType) => {
+
+        try {
+            if (isFileSizeExceeded(state.files, MAX_FILE_SIZE_MB)) {
+                toast.error(`Total file size exceeds ${MAX_FILE_SIZE_MB} MB.`);
+                return;
+            }
+            handleTransferStatusChange(TransferStatus.INITIALIZING);
+           
+            let fileDetails: { type: string; size: number; blob: Blob; key: string };
+            if (state.files.length > 1) {
+                const { size, type, zipBlob } = await inZip(state.files);
+                fileDetails = {
+                    type,
+                    size,
+                    blob: zipBlob,
+                    key: `${uuidv4()}.zip`,
+                };
+            } else {
+                const file = state.files[0] as File;
+                fileDetails = {
+                    type: file.type,
+                    size: file.size,
+                    blob: file,
+                    key: `${uuidv4()}.${file.name.split(".").pop()}`,
+                };
+            }
+            const reshapedTransferData: TransferBaseDataType = {
+                ...transferData,
+                fileSize: fileDetails.size,
+                fileType: fileDetails.type,
+                transferKey: fileDetails.key,
+                userId:session?.user.id,
+                filePassword: transferData.fileIsPasswordEnabled ? transferData.filePassword : "",
+                recipientEmail: transferData.transferMode === TransferMode.EMAIL_SEND ? transferData.recipientEmail : "",
+            };
+            console.log(reshapedTransferData,"reshapedTransferData")
+             handleApendTransferData(reshapedTransferData);
+            // const response = await getUploadSignedURL({
+            //     fileType: fileDetails.type,
+            //     fileSize: fileDetails.size,
+            //     fileKey: fileDetails.key,
+            // });
+            // if (response.success) {
+            //     handleTransferStatusChange(TransferStatus.PROGRESS);
+            //     const uploadResponse = await axios.put(response.data.url, fileDetails.blob, {
+            //         headers: {
+            //             "Content-Type": fileDetails.type,
+            //         },
+            //         onUploadProgress: (progressEvent) => {
+            //             if (progressEvent.total) {
+            //                 const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            //                 handleTransferedDataPercentageChanges(percentCompleted)
+            //             }
+            //         }
+            //     });
+
+            //     if (uploadResponse) {
+            //         handleTransferStatusChange(TransferStatus.COMPLETE);
+            //     }
+            // } else {
+            //     handleTransferStatusChange(TransferStatus.INITIAL);
+            //     toast.error(response.error || "Failed to get upload URL.");
+            // }
+        } catch (err) {
+            // toast.error("An unexpected error occurred.");
+            // handleTransferStatusChange(TransferStatus.INITIAL);
+        }
     };
 
     const mutationFuncs = {
@@ -67,7 +139,9 @@ const FileTransferContextProvider: FC<PropsWithChildren> = ({ children }) => {
         handleOnDrop,
         handleRemoveFiles,
         handleTransferStatusChange,
-        handleInitilizeTransfer
+        handleInitializeTransfer,
+        handleTransferedDataPercentageChanges,
+        handleApendTransferData
     };
     return (
         <FileTransferContext.Provider value={{ state, mutationFuncs }}>
