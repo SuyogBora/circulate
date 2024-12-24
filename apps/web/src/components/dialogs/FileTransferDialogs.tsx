@@ -25,8 +25,8 @@ interface FileTransferDialogsProps {
 
 const FileTransferDialogs: FC<FileTransferDialogsProps> = ({ open, close, transferMode }) => {
   const {
-    state: { files, transfer_status, transfer_data, transfered_data_percentage },
-    mutationFuncs: { handleInitializeTransfer, handleTransferStatusChange }
+    state: { files, transfer_status, transfer_data, transfered_data_percentage, generatedTransferLink },
+    mutationFuncs: { handleInitializeTransfer, handleTransferStatusChange, handleResetTransferState }
   } = useFileTransferContext();
 
   const handleSubmit = (data: z.infer<typeof TransferCreateSchema>) => {
@@ -35,9 +35,6 @@ const FileTransferDialogs: FC<FileTransferDialogsProps> = ({ open, close, transf
 
   const handleClose = () => {
     close();
-    setTimeout(() => {
-      handleTransferStatusChange(TransferStatus.INITIAL);
-    }, 300);
   };
 
   const getDialogContent = () => {
@@ -92,7 +89,13 @@ const FileTransferDialogs: FC<FileTransferDialogsProps> = ({ open, close, transf
           />
           <TransferInitializingUI handleClose={handleClose} isActiveStep={transfer_status === TransferStatus.INITIALIZING} />
           <TransferInProgressUI handleClose={handleClose} isActiveStep={transfer_status === TransferStatus.PROGRESS} transfered_data_percentage={transfered_data_percentage} />
-          <TransferCompleteUI handleClose={handleClose} isActiveStep={transfer_status === TransferStatus.COMPLETE} />
+          <TransferCompleteUI
+            generatedTransferLink={generatedTransferLink}
+            handleClose={() => {
+              handleResetTransferState()
+              handleClose()
+            }}
+            isActiveStep={transfer_status === TransferStatus.COMPLETE} />
         </div>
       </DialogContent>
     </Dialog>

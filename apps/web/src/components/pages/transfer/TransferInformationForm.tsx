@@ -120,13 +120,13 @@ const TransferInformationForm: FC<TransferInformationFormProps> = ({ files, tran
                                     >
                                         <FormItem className="flex items-center space-x-2 space-y-0">
                                             <FormControl>
-                                                <RadioGroupItem value="manual_send" />
+                                                <RadioGroupItem value="MANUAL_SEND" />
                                             </FormControl>
                                             <FormLabel>Get Transfer Link</FormLabel>
                                         </FormItem>
                                         <FormItem className="flex items-center space-x-2 space-y-0">
                                             <FormControl>
-                                                <RadioGroupItem value="email_send" />
+                                                <RadioGroupItem value="EMAIL_SEND" />
                                             </FormControl>
                                             <FormLabel>Send Link via Email</FormLabel>
                                         </FormItem>
@@ -136,7 +136,7 @@ const TransferInformationForm: FC<TransferInformationFormProps> = ({ files, tran
                             </FormItem>
                         )}
                     />
-                    {watchTransferMode === "email_send" && (
+                    {watchTransferMode === "EMAIL_SEND" && (
                         <FormField
                             control={form.control}
                             name="recipientEmail"

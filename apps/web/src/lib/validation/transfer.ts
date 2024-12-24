@@ -40,7 +40,7 @@ export const TransferSchema = z
         code: z.ZodIssueCode.custom,
       });
     }
-    if (data.transferMode === "email_send") {
+    if (data.transferMode === "EMAIL_SEND") {
       if (!data.recipientEmail) {
         ctx.addIssue({
           path: ["recipientEmail"],

@@ -1,4 +1,6 @@
+import { TransferStatus } from "@/types/enums";
 import { FileTransferAction, FileTransferState } from "@/types/state";
+import { transferDataInitialState } from "../context/FileTransferContext";
 
 export const fileTransferReducer = (state: FileTransferState, action: FileTransferAction): FileTransferState => {
     switch (action.type) {
@@ -12,10 +14,21 @@ export const fileTransferReducer = (state: FileTransferState, action: FileTransf
             return { ...state, files: filteredFiles }
         case "CHANGE_TRANSFER_STATUS":
             return { ...state, transfer_status: action.payload }
-        case "CHANGE_TRANSFERED_DATA_PERCENATEGE":
+        case "CHANGE_TRANSFERED_DATA_PERCENTAGE":
             return { ...state, transfered_data_percentage: action.payload }
-        case "APEND_TRANSFER_DATA":
+        case "APPEND_TRANSFER_DATA":
             return { ...state, transfer_data: { ...action.payload } }
+        case "SET_TRANSFER_URL":
+            return { ...state, generatedTransferLink: action.payload }
+        case "RESET_STATE":
+            return {
+                 files:[],
+                 generatedTransferLink:null,
+                 transfer_data:transferDataInitialState,
+                 error:null,
+                 transfer_status:TransferStatus.INITIAL,
+                 transfered_data_percentage:0
+            }
         default:
             return state;
     }

@@ -38,19 +38,36 @@ export const {
     secret: process.env.NEXT_AUTH_SECRETE,
     session: {
         strategy: "jwt",
-        maxAge: 60 * 60 * 24 * 7,
-    },
-    jwt: {
-        maxAge: 60 * 60 * 24 * 7,
     },
     callbacks: {
-        async jwt({ token, user ,session}) {
-            console.log("tokentokentokentokentokentokentoken",token,user)
-            return null
+        jwt: async ({
+            token,
+            user,
+            trigger,
+        }) => {
+            if (user) {
+                token.user = user;
+            }
+            if (trigger === "update") {
+                const refreshedUser = await prisma.user.findUnique({
+                    where: { id: token.sub },
+                });
+                if (refreshedUser) {
+                    token.user = refreshedUser;
+                } else {
+                    return {};
+                }
+            }
+            return token;
         },
-        async session({ token, user ,session }) {
-            console.log("sessionsessionsessionsessionsessionsessionsessionsessionsessionsession",session)
-            return session
-        }
+         session: async ({ session, token }) =>{
+            if (token) {
+                session.user = {
+                    ...session.user,
+                    userId: token.sub,
+                };
+            }
+            return session;
+        },
     },
 });

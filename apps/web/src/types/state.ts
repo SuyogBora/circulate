@@ -8,14 +8,17 @@ export interface FileTransferState {
     error: string | null;
     transfer_status:TransferStatus,
     transfer_data:TransferBaseDataType,
-    transfered_data_percentage:number
+    transfered_data_percentage:number,
+    generatedTransferLink:string | null
 }
 export type FileTransferAction =
     | { type: "ADD_FILE"; payload: File[] }
     | { type: "REMOVE_FILE"; payload: File}
     | { type: "CHANGE_TRANSFER_STATUS"; payload: TransferStatus}
-    | { type: "CHANGE_TRANSFERED_DATA_PERCENATEGE"; payload: number}
-    | { type: "APEND_TRANSFER_DATA"; payload: TransferBaseDataType}
+    | { type: "CHANGE_TRANSFERED_DATA_PERCENTAGE"; payload: number}
+    | { type: "APPEND_TRANSFER_DATA"; payload: TransferBaseDataType}
+    | { type: "SET_TRANSFER_URL"; payload:string|null}
+    | { type: "RESET_STATE";}
 
 export type MutationFuncs = {
     handleAddFiles: (files: File[]) => void,
@@ -24,7 +27,8 @@ export type MutationFuncs = {
     handleTransferStatusChange:(status:TransferStatus) => void
     handleInitializeTransfer:(transferData:TransferCreateDataType) => void
     handleTransferedDataPercentageChanges:(percentage:number) => void
-    handleApendTransferData:(transferData:TransferBaseDataType) => void
+    handleAppendTransferData:(transferData:TransferBaseDataType) => void
+    handleResetTransferState:() => void
 }
 export interface FileTransferContextValue {
     state: FileTransferState;

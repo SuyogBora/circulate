@@ -1,6 +1,6 @@
 export enum TransferMode {
-    MANUAL_SEND = "manual_send",
-    EMAIL_SEND = "email_send",
+    MANUAL_SEND = "MANUAL_SEND",
+    EMAIL_SEND = "EMAIL_SEND",
 }
 
 export enum TransferStatus {
